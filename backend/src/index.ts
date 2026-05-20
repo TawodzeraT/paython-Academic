@@ -5,7 +5,9 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import studentRoutes from './routes/student.routes';
 
+app.use('/api/student', studentRoutes);
 dotenv.config();
 
 const app = express();
