@@ -86,3 +86,30 @@ export const sendPasswordResetEmail = async (name: string, email: string, token:
     `,
   });
 };
+export const sendPurchaseConfirmationEmail = async (
+  name: string,
+  email: string,
+  courseTitle: string,
+  courseId: string
+) => {
+  await sendEmail({
+    to: email,
+    subject: `You're enrolled: ${courseTitle}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <h1 style="color:#1a1a2e">You're in! 🎉</h1>
+        <p>Hi ${name}, your purchase was successful. You now have full access to:</p>
+        <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0">
+          <strong style="font-size:18px">${courseTitle}</strong>
+        </div>
+        <a href="${process.env.FRONTEND_URL}/learn/${courseId}"
+           style="background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px">
+          Start Learning Now
+        </a>
+        <p style="color:#666;margin-top:32px;font-size:14px">
+          Happy learning!<br/>The Paython Academy Team
+        </p>
+      </div>
+    `,
+  });
+};
