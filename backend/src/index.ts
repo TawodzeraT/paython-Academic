@@ -6,7 +6,9 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import studentRoutes from './routes/student.routes';
+import courseRoutes from './routes/course.routes';
 
+app.use('/api/courses', courseRoutes);
 app.use('/api/student', studentRoutes);
 dotenv.config();
 
