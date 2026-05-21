@@ -8,7 +8,9 @@ import authRoutes from './routes/auth.routes';
 import studentRoutes from './routes/student.routes';
 import courseRoutes from './routes/course.routes';
 import paymentRoutes from './routes/payment.routes';
+import adminRoutes from './routes/admin.routes';
 
+app.use('/api/admin', adminRoutes);
 dotenv.config();
 
 const app = express();
