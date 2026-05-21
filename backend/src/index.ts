@@ -9,14 +9,6 @@ import studentRoutes from './routes/student.routes';
 import courseRoutes from './routes/course.routes';
 import paymentRoutes from './routes/payment.routes';
 
-// Add this BEFORE app.use(express.json())
-app.use('/api/payments', paymentRoutes);
-
-// Then keep existing:
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use('/api/courses', courseRoutes);
-app.use('/api/student', studentRoutes);
 dotenv.config();
 
 const app = express();
@@ -37,6 +29,9 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Webhook MUST come before express.json()
+app.use('/api/payments', paymentRoutes);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,6 +40,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/courses', courseRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
