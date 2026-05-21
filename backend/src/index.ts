@@ -7,7 +7,14 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import studentRoutes from './routes/student.routes';
 import courseRoutes from './routes/course.routes';
+import paymentRoutes from './routes/payment.routes';
 
+// Add this BEFORE app.use(express.json())
+app.use('/api/payments', paymentRoutes);
+
+// Then keep existing:
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use('/api/courses', courseRoutes);
 app.use('/api/student', studentRoutes);
 dotenv.config();
