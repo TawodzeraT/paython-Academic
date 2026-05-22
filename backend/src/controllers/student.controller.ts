@@ -78,3 +78,56 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ error: 'Failed to load dashboard.' });
   }
 };
+export const getMyCertificates = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    const certificates = await prisma.certificate.findMany({
+      where: { userId, revokedAt: null },
+      include: {
+        course: {
+          select: { id: true, title: true, thumbnail: true, difficulty: true },
+        },
+      },
+      orderBy: { issuedAt: 'desc' },
+    });
+
+    res.json({ certificates });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch certificates.' });
+  }
+};
+
+export const verifyCertificate = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { code } = req.params;
+
+    const cert = await prisma.certificate.findUnique({
+      where: { uniqueCode: code },
+      include: {
+        user: { select: { name: true } },
+        course: { select: { title: true, difficulty: true, thumbnail: true } },
+      },
+    });
+
+    if (!cert || cert.revokedAt) {
+      res.status(404).json({ valid: false, error: 'Certificate not found or revoked.' });
+      return;
+    }
+
+    res.json({
+      valid: true,
+      certificate: {
+        uniqueCode: cert.uniqueCode,
+        issuedAt: cert.issuedAt,
+        studentName: cert.user.name,
+        courseTitle: cert.course.title,
+        difficulty: cert.course.difficulty,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Verification failed.' });
+  }
+};
