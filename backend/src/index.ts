@@ -13,6 +13,9 @@ import adminRoutes   from './routes/admin.routes';
 import quizRoutes    from './routes/quiz.routes';
 import reviewRoutes  from './routes/review.routes';
 import blogRoutes    from './routes/blog.routes';
+import aiRoutes from './routes/ai.routes';
+
+app.use('/api/ai', aiRoutes);
 
 dotenv.config();
 
