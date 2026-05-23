@@ -555,19 +555,25 @@ function LessonEditor({ lesson, isExpanded, onToggle, onSave, onDelete }: Lesson
               placeholder="# Lesson content in Markdown..."
               onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-            />
-          </div>
+            
+import { useRouter } from 'next/navigation';
 
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              <Save size={14} /> Save Lesson
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+// Inside LessonEditor, add router:
+const router = useRouter();
+
+// Replace the save button div at the bottom with:
+<div className="flex items-center justify-between">
+  <button
+    onClick={() => router.push(`/admin/courses/${lesson.moduleId}/quiz/${lesson.id}`)}
+    className="flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-700 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-4 py-2 rounded-lg transition-colors"
+  >
+    🧠 {lesson.quiz ? 'Edit Quiz' : 'Add Quiz'}
+  </button>
+  <button
+    onClick={handleSave}
+    className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+  >
+    <Save size={14} /> Save Lesson
+  </button>
+</div>
+         
