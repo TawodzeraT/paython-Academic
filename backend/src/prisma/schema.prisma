@@ -223,3 +223,21 @@ model Review {
   @@unique([userId, courseId])
   @@map("reviews")
 }
+
+model BlogPost {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  thumbnail String?
+  tags      String[]
+  published Boolean  @default(false)
+  readTime  Int      @default(5)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_posts")
+}
