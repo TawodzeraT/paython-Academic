@@ -63,7 +63,20 @@ export default function LessonContent({ lesson }: { lesson: Lesson }) {
                   <p className="text-gray-200 text-sm font-medium truncate">{file.name}</p>
                   {file.size && (
                     <p className="text-gray-500 text-xs">{formatBytes(file.size)}</p>
-                  )}
+                  
+   import QuizPlayer from './QuizPlayer';
+
+// Inside LessonContent, add this after the attachments section:
+{lesson.quiz && (
+                    
+  )}
+  <div>
+    <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+      <span>🧠</span> Lesson Quiz
+    </h3>
+    <QuizPlayer lessonId={lesson.id} />
+  </div>
+)}
                 </div>
                 <LinkIcon size={14} className="text-gray-500 group-hover:text-brand-400 flex-shrink-0" />
               </a>
