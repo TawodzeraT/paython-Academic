@@ -132,3 +132,77 @@ export const verifyCertificate = async (req: Request, res: Response): Promise<vo
     res.status(500).json({ error: 'Verification failed.' });
   }
 };
+
+import bcrypt from 'bcryptjs';
+
+export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { name, avatar } = req.body;
+
+    if (!name?.trim()) {
+      res.status(400).json({ error: 'Name is required.' });
+      return;
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: name.trim(), avatar: avatar || null },
+      select: { id: true, name: true, email: true, avatar: true, role: true, isEmailVerified: true },
+    });
+
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update profile.' });
+  }
+};
+
+export const updatePassword = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.password) {
+      res.status(400).json({ error: 'No password set on this account.' });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      res.status(401).json({ error: 'Current password is incorrect.' });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters.' });
+      return;
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    // Invalidate all refresh tokens for security
+    await prisma.refreshToken.deleteMany({ where: { userId } });
+
+    res.json({ message: 'Password updated. Please log in again.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update password.' });
+  }
+};
+
+export const updateNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // Notification preferences stored client-side for now
+    // In Phase 3 add a UserPreferences model to Prisma
+    res.json({ message: 'Preferences saved.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save preferences.' });
+  }
+};
