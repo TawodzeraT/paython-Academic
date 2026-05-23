@@ -41,6 +41,7 @@ model User {
   certificates      Certificate[]
   reviews           Review[]
   refreshTokens     RefreshToken[]
+  blogPosts BlogPost[]
 
   @@map("users")
 }
