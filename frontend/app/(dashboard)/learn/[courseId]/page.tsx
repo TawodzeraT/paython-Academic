@@ -8,6 +8,10 @@ import VideoPlayer from '@/components/player/VideoPlayer';
 import LessonContent from '@/components/player/LessonContent';
 import ReviewSection from '@/components/course/ReviewSection';
 import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import AiTutor from '@/components/player/AiTutor';
+
+// Add just before the final closing </div> of the component return:
+<AiTutor lessonId={activeLesson.id} lessonTitle={activeLesson.title} />
 
 interface Attachment { id: string; name: string; url: string; size: number | null }
 interface LessonProgress { completed: boolean; watchedSecs: number }
