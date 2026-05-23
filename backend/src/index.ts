@@ -11,7 +11,9 @@ import paymentRoutes from './routes/payment.routes';
 import adminRoutes from './routes/admin.routes';
 import quizRoutes from './routes/quiz.routes';
 import reviewRoutes from './routes/review.routes';
+import blogRoutes from './routes/blog.routes';
 
+app.use('/api/blog', blogRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/admin', adminRoutes);
