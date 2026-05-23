@@ -6,6 +6,7 @@ import api from '@/lib/axios';
 import PlayerSidebar from '@/components/player/PlayerSidebar';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import LessonContent from '@/components/player/LessonContent';
+import ReviewSection from '@/components/course/ReviewSection';
 import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
 interface Attachment { id: string; name: string; url: string; size: number | null }
@@ -58,13 +59,12 @@ export default function CoursePlayerPage() {
     api.get(`/api/courses/${courseId}/player`)
       .then(({ data }) => {
         setCourse(data.course);
-        const firstIncomplete = data.course.modules
-          .flatMap((m: Module) => m.lessons)
-          .find((l: Lesson) => !l.progress?.completed);
         const lessonId = searchParams.get('lesson');
+        const allLessonsFlat: Lesson[] = data.course.modules.flatMap((m: Module) => m.lessons);
+        const firstIncomplete = allLessonsFlat.find((l) => !l.progress?.completed);
         const target = lessonId
-          ? data.course.modules.flatMap((m: Module) => m.lessons).find((l: Lesson) => l.id === lessonId)
-          : firstIncomplete ?? data.course.modules[0]?.lessons[0];
+          ? allLessonsFlat.find((l) => l.id === lessonId)
+          : firstIncomplete ?? allLessonsFlat[0];
         setActiveLesson(target ?? null);
       })
       .catch(() => router.push('/dashboard/courses'))
@@ -84,6 +84,7 @@ export default function CoursePlayerPage() {
       await api.patch(`/api/courses/lessons/${activeLesson.id}/progress`, {
         completed: true,
       });
+
       // Update local state
       setCourse((prev) => {
         if (!prev) return prev;
@@ -99,8 +100,11 @@ export default function CoursePlayerPage() {
           })),
         };
       });
+
       setActiveLesson((prev) =>
-        prev ? { ...prev, progress: { completed: true, watchedSecs: prev.duration ?? 0 } } : prev
+        prev
+          ? { ...prev, progress: { completed: true, watchedSecs: prev.duration ?? 0 } }
+          : prev
       );
     } catch (err) {
       console.error(err);
@@ -109,10 +113,10 @@ export default function CoursePlayerPage() {
     }
   }, [activeLesson, completing]);
 
-  const goNext = useCallback(() => {
-    if (nextLesson) {
-      markComplete().then(() => selectLesson(nextLesson));
-    }
+  const goNext = useCallback(async () => {
+    if (!nextLesson) return;
+    await markComplete();
+    selectLesson(nextLesson);
   }, [nextLesson, markComplete, selectLesson]);
 
   if (isLoading) {
@@ -131,26 +135,36 @@ export default function CoursePlayerPage() {
   const totalLessons = allLessons.length;
   const completedLessons = allLessons.filter((l) => l.progress?.completed).length;
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const isCompleted = !!activeLesson.progress?.completed;
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col">
 
       {/* Top bar */}
-      <header className="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-3 z-30">
+      <header className="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-3 z-30 sticky top-0">
         <button
           onClick={() => router.push('/dashboard/courses')}
           className="text-gray-400 hover:text-white transition-colors"
         >
           <ChevronLeft size={20} />
         </button>
+
         <div className="flex-1 min-w-0">
           <p className="text-white font-medium text-sm truncate">{course.title}</p>
-          <p className="text-gray-400 text-xs">{completedLessons}/{totalLessons} lessons · {progress}%</p>
+          <p className="text-gray-400 text-xs">
+            {completedLessons}/{totalLessons} lessons · {progress}%
+          </p>
         </div>
-        {/* Progress bar */}
-        <div className="hidden sm:block w-32 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-          <div className="h-full bg-brand-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+
+        {/* Progress bar — desktop */}
+        <div className="hidden sm:block w-32 h-1.5 bg-gray-700 rounded-full overflow-hidden flex-shrink-0">
+          <div
+            className="h-full bg-brand-500 rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
         </div>
+
+        {/* Mobile sidebar toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
@@ -161,46 +175,49 @@ export default function CoursePlayerPage() {
 
       <div className="flex flex-1 overflow-hidden">
 
-        {/* Main content */}
+        {/* Main content area */}
         <div className="flex-1 overflow-y-auto">
 
-          {/* Video */}
+          {/* Video player */}
           {activeLesson.videoUrl && (
             <VideoPlayer
               url={activeLesson.videoUrl}
-              onComplete={markComplete}
               lessonId={activeLesson.id}
+              onComplete={markComplete}
             />
           )}
 
-          {/* Lesson info */}
-          <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8">
+          {/* Lesson body */}
+          <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-10">
 
-            {/* Title + complete button */}
-            <div className="flex items-start justify-between gap-4 mb-6">
+            {/* Lesson title + mark complete */}
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-xl font-bold text-white">{activeLesson.title}</h1>
-                {activeLesson.progress?.completed && (
-                  <span className="mt-1 inline-flex items-center gap-1 text-xs text-green-400">
+                <h1 className="text-xl font-bold text-white leading-snug">
+                  {activeLesson.title}
+                </h1>
+                {isCompleted && (
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-xs text-green-400 font-medium">
                     ✓ Completed
                   </span>
                 )}
               </div>
-              {!activeLesson.progress?.completed && (
+              {!isCompleted && (
                 <button
                   onClick={markComplete}
                   disabled={completing}
-                  className="flex-shrink-0 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                  className="flex-shrink-0 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
-                  {completing ? 'Saving...' : 'Mark Complete'}
+                  {completing ? 'Saving...' : '✓ Mark Complete'}
                 </button>
               )}
             </div>
 
+            {/* Lesson content + attachments + quiz */}
             <LessonContent lesson={activeLesson} />
 
-            {/* Prev / Next */}
-            <div className="flex items-center justify-between mt-10 pt-6 border-t border-gray-800">
+            {/* Prev / Next navigation */}
+            <div className="flex items-center justify-between pt-6 border-t border-gray-800">
               <button
                 onClick={() => prevLesson && selectLesson(prevLesson)}
                 disabled={!prevLesson}
@@ -208,19 +225,28 @@ export default function CoursePlayerPage() {
               >
                 <ChevronLeft size={16} /> Previous
               </button>
+
               <button
                 onClick={goNext}
                 disabled={!nextLesson}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm bg-brand-600 hover:bg-brand-700 disabled:opacity-30 disabled:cursor-not-allowed text-white transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm bg-brand-600 hover:bg-brand-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium transition-colors"
               >
                 Next <ChevronRight size={16} />
               </button>
             </div>
+
+            {/* Reviews — only show after lesson is completed */}
+            {isCompleted && (
+              <div className="pt-6 border-t border-gray-800">
+                <ReviewSection courseId={courseId} enrolled={true} />
+              </div>
+            )}
+
           </div>
         </div>
 
         {/* Desktop sidebar */}
-        <div className="hidden lg:block w-80 border-l border-gray-800 overflow-y-auto bg-gray-900 flex-shrink-0">
+        <div className="hidden lg:flex w-80 border-l border-gray-800 bg-gray-900 flex-shrink-0 overflow-y-auto">
           <PlayerSidebar
             course={course}
             activeLesson={activeLesson}
@@ -231,16 +257,23 @@ export default function CoursePlayerPage() {
         {/* Mobile sidebar drawer */}
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-40 flex">
-            <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
+            <div
+              className="absolute inset-0 bg-black/60"
+              onClick={() => setSidebarOpen(false)}
+            />
             <div className="relative ml-auto w-80 bg-gray-900 h-full overflow-y-auto shadow-xl">
               <PlayerSidebar
                 course={course}
                 activeLesson={activeLesson}
-                onSelectLesson={(l) => { selectLesson(l); setSidebarOpen(false); }}
+                onSelectLesson={(l) => {
+                  selectLesson(l);
+                  setSidebarOpen(false);
+                }}
               />
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
