@@ -4,7 +4,20 @@ import { protect } from '../middleware/auth.middleware';
 import { getDashboard, getMyCourses } from '../controllers/student.controller';
 import { getDashboard, getMyCourses, getMyCertificates, verifyCertificate } from '../controllers/student.controller';
 import { Request, Response } from 'express';
+import {
+  getDashboard,
+  getMyCourses,
+  getMyCertificates,
+  verifyCertificate,
+  updateProfile,
+  updatePassword,
+  updateNotifications,
+} from '../controllers/student.controller';
+import { Request, Response } from 'express';
 
+router.patch('/profile', updateProfile);
+router.patch('/profile/password', updatePassword);
+router.patch('/profile/notifications', updateNotifications);
 router.get('/certificates', getMyCertificates);
 router.get('/certificates/verify/:code', (req: Request, res: Response) =>
   verifyCertificate(req, res)
