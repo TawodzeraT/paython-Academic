@@ -12,6 +12,8 @@ interface Attachment {
 interface Lesson {
   content: string | null;
   attachments: Attachment[];
+  id: string;
+  quiz: { id: string; title: string } | null;
 }
 
 function formatBytes(bytes: number) {
