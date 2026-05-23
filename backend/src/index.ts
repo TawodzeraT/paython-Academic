@@ -9,7 +9,9 @@ import studentRoutes from './routes/student.routes';
 import courseRoutes from './routes/course.routes';
 import paymentRoutes from './routes/payment.routes';
 import adminRoutes from './routes/admin.routes';
+import quizRoutes from './routes/quiz.routes';
 
+app.use('/api/quiz', quizRoutes);
 app.use('/api/admin', adminRoutes);
 dotenv.config();
 
