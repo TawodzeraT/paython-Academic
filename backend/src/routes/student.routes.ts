@@ -14,6 +14,9 @@ import {
   updateNotifications,
 } from '../controllers/student.controller';
 import { Request, Response } from 'express';
+import { getStudentStats } from '../controllers/gamification.controller';
+
+router.get('/stats', getStudentStats);
 
 router.patch('/profile', updateProfile);
 router.patch('/profile/password', updatePassword);
