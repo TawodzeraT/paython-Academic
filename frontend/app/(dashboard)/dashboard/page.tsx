@@ -5,6 +5,49 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/axios';
 import { BookOpen, Trophy, Clock, TrendingUp } from 'lucide-react';
+import StatsWidget from '@/components/dashboard/StatsWidget';
+
+// Add as a sidebar on desktop — wrap existing content in a grid:
+// Replace the return's main div with:
+<div className="space-y-8">
+  <div>
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      Welcome back, {user?.name?.split(' ')[0]} 👋
+    </h1>
+    <p className="text-gray-500 dark:text-gray-400 mt-1">Pick up where you left off.</p>
+  </div>
+
+  <div className="grid lg:grid-cols-3 gap-6">
+    <div className="lg:col-span-2 space-y-6">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4">
+        {statCards.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${color}`}>
+              <Icon size={20} />
+            </div>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{value.toLocaleString()}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Continue learning */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Continue Learning</h2>
+          <Link href="/dashboard/courses" className="text-sm text-brand-600 hover:underline">View all</Link>
+        </div>
+        {/* ... rest of the courses grid ... */}
+      </div>
+    </div>
+
+    {/* Sidebar */}
+    <div className="lg:col-span-1">
+      <StatsWidget />
+    </div>
+  </div>
+</div>
 
 interface EnrolledCourse {
   id: string;
