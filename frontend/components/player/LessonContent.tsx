@@ -29,6 +29,29 @@ export default function LessonContent({ lesson }: { lesson: Lesson }) {
       {/* Markdown content */}
       {lesson.content && (
         <div
+          import CodeSandbox from './CodeSandbox';
+
+// Add this to the Lesson interface:
+interface Lesson {
+  content: string | null;
+  attachments: Attachment[];
+  id: string;
+  quiz: { id: string; title: string } | null;
+  codingChallenge?: string | null;
+  starterCode?: string | null;
+}
+
+// Add inside LessonContent return, after attachments:
+{lesson.codingChallenge && (
+  <div>
+    <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+      <span>💻</span> Coding Exercise
+    </h3>
+    <CodeSandbox
+      challenge={lesson.codingChallenge}
+      starterCode={lesson.starterCode ?? undefined}
+      lessonId={lesson.id}
+
           className="prose prose-invert prose-sm max-w-none
             prose-headings:text-white prose-headings:font-semibold
             prose-p:text-gray-300 prose-p:leading-relaxed
