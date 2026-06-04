@@ -7,6 +7,17 @@ import {
 } from '../controllers/payment.controller';
 import { protect } from '../middleware/auth.middleware';
 import express from 'express';
+import {
+  createCheckoutSession,
+  stripeWebhook,
+  verifyCheckoutSession,
+  checkEnrollment,
+  createSubscriptionSession,
+  getSubscriptionStatus,
+} from '../controllers/payment.controller';
+
+router.post('/subscribe', protect, createSubscriptionSession);
+router.get('/subscription', protect, getSubscriptionStatus);
 
 const router = Router();
 
