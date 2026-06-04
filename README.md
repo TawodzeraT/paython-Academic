@@ -245,6 +245,35 @@ paython-academy/
 
 ---
 
+## Phase 3 Features
+
+### AI Tutor
+Add to `backend/.env`:
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+```
+Install the SDK:
+```bash
+cd backend && npm install @anthropic-ai/sdk
+```
+
+### Python Coding Sandbox
+Powered by Pyodide (Python in WebAssembly) — runs entirely in the browser.
+No server needed for code execution.
+
+### Stripe Subscriptions
+Create products in your Stripe dashboard then add price IDs:
+```env
+STRIPE_MONTHLY_PRICE_ID=price_xxx
+STRIPE_ANNUAL_PRICE_ID=price_xxx
+```
+
+### Run Phase 3 migrations
+```bash
+cd backend
+npx prisma migrate dev --name add_coding_sandbox
+```
+
 ## License
 
 MIT
