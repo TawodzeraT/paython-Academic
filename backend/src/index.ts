@@ -44,6 +44,11 @@ app.use('/api/payments', paymentRoutes);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+import { sanitizeBody } from './middleware/security.middleware';
+
+// After app.use(express.json()) add:
+app.use(sanitizeBody);
+
 // ─── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', app: 'Paython Academy API', timestamp: new Date() });
