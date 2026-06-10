@@ -1,278 +1,145 @@
-# Paython Academy
+# Paython Academy 🐍
 
-A full-stack self-paced Python learning platform built with Next.js, Express, PostgreSQL, Stripe, and Prisma.
+A production-ready self-paced Python learning platform.
 
----
-
-## Tech Stack
-
-| Layer      | Technology                          |
-|------------|-------------------------------------|
-| Frontend   | Next.js 14, React, TypeScript, Tailwind CSS |
-| Backend    | Node.js, Express.js, TypeScript     |
-| Database   | PostgreSQL + Prisma ORM             |
-| Auth       | JWT (access + refresh tokens)       |
-| Payments   | Stripe Checkout                     |
-| Email      | Resend (via Nodemailer)             |
-| Storage    | Cloudflare R2 / AWS S3              |
-| Video      | Mux or Vimeo private embeds         |
-| Charts     | Recharts                            |
+[![CI](https://github.com/YOUR_USERNAME/paython-academy/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/paython-academy/actions)
 
 ---
 
-## Prerequisites
+## What's built
 
-- Node.js 18+
-- PostgreSQL 14+ (local or hosted)
-- A Stripe account (free test mode)
-- A Resend account (free tier)
+| Feature | Status |
+|---------|--------|
+| JWT auth + refresh tokens | ✅ |
+| Google OAuth | ✅ |
+| Stripe one-time payments | ✅ |
+| Stripe subscriptions | ✅ |
+| Course player + progress | ✅ |
+| Auto certificates | ✅ |
+| Quiz engine | ✅ |
+| AI Tutor (Claude API) | ✅ |
+| Python coding sandbox | ✅ |
+| Reviews & ratings | ✅ |
+| Blog / CMS | ✅ |
+| Admin dashboard | ✅ |
+| Revenue analytics | ✅ |
+| Gamification (XP, badges) | ✅ |
+| Dark mode | ✅ |
+| Fully responsive | ✅ |
 
 ---
 
-## 1. Clone the repo
+## Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | Node.js, Express.js, TypeScript |
+| Database | PostgreSQL + Prisma |
+| Auth | JWT + refresh tokens |
+| Payments | Stripe |
+| AI | Anthropic Claude API |
+| Email | Resend |
+| Charts | Recharts |
+| Storage | Cloudflare R2 |
+| Video | Mux / Vimeo |
+
+---
+
+## Quick start (Codespaces)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/paython-academy.git
-cd paython-academy
-```
+# 1. Open in GitHub Codespaces
 
----
-
-## 2. Set up the backend
-
-```bash
+# 2. Backend
 cd backend
 npm install
-```
-
-Copy the env file and fill it in:
-
-```bash
 cp .env.example .env
-```
+# Fill in .env with your Neon DB URL and keys
 
-Open `backend/.env` and set:
-
-```env
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
-
-DATABASE_URL="postgresql://postgres:password@localhost:5432/paython_academy"
-
-JWT_SECRET=change_this_to_a_long_random_string
-JWT_REFRESH_SECRET=change_this_to_another_long_random_string
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=7d
-
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-RESEND_API_KEY=re_...
-EMAIL_FROM=noreply@paythonacademy.com
-```
-
----
-
-## 3. Set up the database
-
-Create the database in PostgreSQL:
-
-```sql
-CREATE DATABASE paython_academy;
-```
-
-Run Prisma migrations:
-
-```bash
-cd backend
 npx prisma generate
 npx prisma migrate dev --name init
-```
-
-Open Prisma Studio to inspect the database (optional):
-
-```bash
-npx prisma studio
-```
-
----
-
-## 4. Create your first admin user
-
-After running migrations, open Prisma Studio at `http://localhost:5555`,
-find the `users` table, and manually set `role` to `SUPER_ADMIN` on your account
-after registering through the frontend.
-
-Or use this one-time seed script — create `backend/src/seed.ts`:
-
-```typescript
-import { prisma } from './utils/prisma';
-import bcrypt from 'bcryptjs';
-
-async function main() {
-  const password = await bcrypt.hash('Admin1234!', 12);
-  await prisma.user.upsert({
-    where: { email: 'admin@paythonacademy.com' },
-    update: {},
-    create: {
-      name: 'Admin',
-      email: 'admin@paythonacademy.com',
-      password,
-      role: 'SUPER_ADMIN',
-      isEmailVerified: true,
-    },
-  });
-  console.log('Admin created: admin@paythonacademy.com / Admin1234!');
-}
-
-main().then(() => prisma.$disconnect());
-```
-
-Run it:
-
-```bash
+npx prisma migrate dev --name add_blog
+npx prisma migrate dev --name add_coding_sandbox
 npx ts-node src/seed.ts
-```
+npm run dev
 
----
-
-## 5. Set up the frontend
-
-```bash
-cd ../frontend
+# 3. Frontend (new terminal)
+cd frontend
 npm install
 cp .env.example .env.local
-```
-
-Open `frontend/.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+# Fill in .env.local
+npm run dev
 ```
 
 ---
 
-## 6. Run everything
+## Default admin credentials
 
-Open two terminals:
+```
+Email:    admin@paythonacademy.com
+Password: Admin1234!
+```
 
-**Terminal 1 — Backend:**
+Change immediately after first login.
+
+---
+
+## Migrations to run in order
+
 ```bash
 cd backend
-npm run dev
+npx prisma migrate dev --name init
+npx prisma migrate dev --name add_blog
+npx prisma migrate dev --name add_coding_sandbox
 ```
-Backend runs at `http://localhost:5000`
-
-**Terminal 2 — Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-Frontend runs at `http://localhost:3000`
 
 ---
 
-## 7. Test Stripe webhooks locally
+## Deployment
 
-Install the Stripe CLI:
-```bash
-brew install stripe/stripe-cli/stripe
-stripe login
-stripe listen --forward-to localhost:5000/api/payments/webhook
-```
-
-Copy the webhook signing secret it prints and paste it into `STRIPE_WEBHOOK_SECRET` in your `.env`.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full deployment instructions.
 
 ---
 
-## 8. Key URLs
-
-| URL | Description |
-|-----|-------------|
-| `http://localhost:3000` | Homepage |
-| `http://localhost:3000/courses` | Course catalog |
-| `http://localhost:3000/login` | Student login |
-| `http://localhost:3000/register` | Student register |
-| `http://localhost:3000/dashboard` | Student dashboard |
-| `http://localhost:3000/admin` | Admin panel |
-| `http://localhost:5000/health` | API health check |
-| `http://localhost:5555` | Prisma Studio |
-
----
-
-## 9. Folder structure
+## Project structure
 
 ```
 paython-academy/
 ├── backend/
 │   └── src/
-│       ├── controllers/     # Route handlers
-│       ├── middleware/      # Auth, validation
-│       ├── routes/          # Express routers
-│       ├── utils/           # Prisma, JWT, email
-│       ├── validators/      # Zod schemas
-│       └── prisma/          # schema.prisma
+│       ├── controllers/      # auth, course, student, admin,
+│       │                     # payment, quiz, review, blog,
+│       │                     # ai, gamification
+│       ├── middleware/       # auth, validate, security
+│       ├── routes/           # 8 route files
+│       ├── utils/            # prisma, jwt, email
+│       ├── validators/       # zod schemas
+│       └── prisma/           # schema + migrations
 ├── frontend/
 │   ├── app/
-│   │   ├── (auth)/          # Login, register, forgot password
-│   │   ├── (dashboard)/     # Student dashboard + course player
-│   │   ├── (admin)/         # Admin panel
-│   │   └── (marketing)/     # Homepage, courses, checkout
+│   │   ├── (auth)/           # login, register, forgot-password
+│   │   ├── (dashboard)/      # student dashboard + player
+│   │   ├── (admin)/          # admin panel
+│   │   └── (marketing)/      # homepage, courses, blog
 │   ├── components/
-│   │   ├── admin/           # Admin sidebar, nav
-│   │   ├── auth/            # ProtectedRoute
-│   │   ├── dashboard/       # Sidebar, mobile nav
-│   │   ├── player/          # VideoPlayer, PlayerSidebar, LessonContent
-│   │   └── ui/              # Button, Input
-│   ├── lib/                 # Axios client
-│   └── store/               # Zustand auth store
+│   │   ├── admin/            # sidebar, nav
+│   │   ├── auth/             # ProtectedRoute
+│   │   ├── course/           # ReviewSection
+│   │   ├── dashboard/        # Sidebar, MobileNav, StatsWidget
+│   │   ├── player/           # VideoPlayer, PlayerSidebar,
+│   │   │                     # LessonContent, QuizPlayer,
+│   │   │                     # AiTutor, CodeSandbox
+│   │   └── ui/               # Button, Input
+│   ├── lib/                  # axios client
+│   └── store/                # zustand auth store
+├── .github/workflows/        # CI + deploy
+├── docker-compose.yml
+├── DEPLOYMENT.md
 └── README.md
 ```
 
 ---
-
-## Phase 2 roadmap (next to build)
-
-- [ ] Quizzes with auto-grading
-- [ ] PDF certificate generation
-- [ ] Blog / CMS
-- [ ] Student reviews & ratings
-- [ ] Admin analytics charts
-- [ ] Email marketing campaigns
-
----
-
-## Phase 3 Features
-
-### AI Tutor
-Add to `backend/.env`:
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-```
-Install the SDK:
-```bash
-cd backend && npm install @anthropic-ai/sdk
-```
-
-### Python Coding Sandbox
-Powered by Pyodide (Python in WebAssembly) — runs entirely in the browser.
-No server needed for code execution.
-
-### Stripe Subscriptions
-Create products in your Stripe dashboard then add price IDs:
-```env
-STRIPE_MONTHLY_PRICE_ID=price_xxx
-STRIPE_ANNUAL_PRICE_ID=price_xxx
-```
-
-### Run Phase 3 migrations
-```bash
-cd backend
-npx prisma migrate dev --name add_coding_sandbox
-```
 
 ## License
 
